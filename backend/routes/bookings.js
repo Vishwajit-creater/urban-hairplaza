@@ -42,7 +42,7 @@ router.post('/', authenticate, (req, res, next) => {
       return res.status(400).json({ error: 'salon_id, booking_date, start_time, and service_ids are required.' });
     }
 
-    const salon = db.prepare('SELECT * FROM salons WHERE id = ? AND status = "approved"').get(salon_id);
+    const salon = db.prepare("SELECT * FROM salons WHERE id = ? AND status = 'approved'").get(salon_id);
     if (!salon) return res.status(404).json({ error: 'Salon not found.' });
 
     // Fetch services and snapshot prices

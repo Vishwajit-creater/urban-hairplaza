@@ -88,7 +88,7 @@ router.get('/analytics', (req, res, next) => {
       WHERE st.salon_id = ? GROUP BY st.id ORDER BY booking_count DESC
     `).all(salon.id);
 
-    const todayCount = db.prepare('SELECT COUNT(*) AS c FROM bookings WHERE salon_id = ? AND booking_date = ? AND status NOT IN ("cancelled")').get(salon.id, today);
+    const todayCount = db.prepare("SELECT COUNT(*) AS c FROM bookings WHERE salon_id = ? AND booking_date = ? AND status NOT IN ('cancelled')").get(salon.id, today);
     const monthRevenue = db.prepare(`SELECT COALESCE(SUM(total_price_snapshot),0) AS rev FROM bookings WHERE salon_id = ? AND status IN ('completed','confirmed') AND booking_date >= ?`).get(salon.id, fromDate);
     const activeStaff = db.prepare('SELECT COUNT(*) AS c FROM staff WHERE salon_id = ? AND is_active = 1').get(salon.id);
     const avgRating = db.prepare('SELECT COALESCE(AVG(rating), 0) AS avg FROM reviews WHERE salon_id = ?').get(salon.id);
