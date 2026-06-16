@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Environment variables (NEVER commit this)
+.env
+
+# SQLite database files
+backend/db/*.db
+backend/db/*.db-shm
+backend/db/*.db-wal
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build / dist artifacts
+dist/
+build/
+
+# Test coverage
+coverage/
+.nyc_output/

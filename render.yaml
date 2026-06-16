@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: urban-hairplaza
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node backend/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_PATH
+        value: backend/db/urban_hairplaza.db
+      - key: CORS_ORIGIN
+        value: https://urban-hairplaza.onrender.com

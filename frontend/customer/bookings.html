@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Bookings | Urban HairPlaza</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--gold:#D4AF37;--gold-light:#F5D878;--gold-dim:rgba(212,175,55,0.15);--bg:#0A0A0F;--card:#12121A;--text:#F0F0F0;--muted:#8B8BA0;--border:rgba(212,175,55,0.15);--green:#10B981;--red:#EF4444;--blue:#3B82F6;--orange:#F59E0B}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:inherit;text-decoration:none}
+nav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 5%;height:70px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:1.4rem;font-weight:700;background:linear-gradient(135deg,var(--gold),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page{max-width:900px;margin:0 auto;padding:2rem 5%}
+.page-header{margin-bottom:2rem}
+.page-title{font-size:2rem;font-weight:800;margin-bottom:.3rem}
+.page-sub{color:var(--muted)}
+/* TABS */
+.tab-bar{display:flex;gap:.5rem;margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-btn{padding:.7rem 1.3rem;background:transparent;border:none;color:var(--muted);font-family:'Outfit',sans-serif;cursor:pointer;font-size:.9rem;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;font-weight:500}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+/* CARDS */
+.booking-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin-bottom:1rem;display:grid;grid-template-columns:80px 1fr auto;gap:1.2rem;align-items:start;transition:border-color .2s}
+.booking-card:hover{border-color:rgba(212,175,55,0.3)}
+@media(max-width:600px){.booking-card{grid-template-columns:1fr;gap:.8rem}}
+.date-block{background:var(--gold-dim);border:1px solid var(--border);border-radius:10px;padding:.8rem;text-align:center;min-width:72px}
+.date-month{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--gold);font-weight:600}
+.date-day{font-size:2rem;font-weight:800;color:var(--text);line-height:1}
+.date-year{font-size:.7rem;color:var(--muted)}
+.booking-info .salon-name{font-size:1.05rem;font-weight:700;margin-bottom:.3rem}
+.booking-info .meta{color:var(--muted);font-size:.85rem;display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:.5rem}
+.booking-info .services-list{font-size:.88rem;color:var(--muted);margin-bottom:.6rem}
+.booking-info .services-list span{background:rgba(255,255,255,0.05);padding:.15rem .5rem;border-radius:12px;margin-right:.3rem;font-size:.8rem}
+.booking-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:.6rem}
+.status-badge{padding:.3rem .9rem;border-radius:20px;font-size:.78rem;font-weight:600;white-space:nowrap}
+.status-confirmed{background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.3)}
+.status-completed{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3)}
+.status-cancelled{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.status-no_show{background:rgba(245,158,11,0.1);color:var(--orange);border:1px solid rgba(245,158,11,0.2)}
+.amount{font-size:1.1rem;font-weight:700;color:var(--gold)}
+.action-btns{display:flex;flex-direction:column;gap:.4rem;align-items:flex-end}
+.btn-action{padding:.4rem .9rem;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;border:none}
+.btn-cancel{background:transparent;border:1px solid rgba(239,68,68,0.4);color:var(--red)}
+.btn-cancel:hover{background:rgba(239,68,68,0.1)}
+.btn-review{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#000}
+.btn-review:hover{transform:scale(1.03)}
+.reviewed-stars{color:var(--gold);font-size:.95rem}
+/* EMPTY */
+.empty{text-align:center;padding:4rem 2rem;color:var(--muted)}
+.empty-icon{font-size:3.5rem;margin-bottom:1rem}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem;width:100%;max-width:440px;animation:mi .3s ease}
+@keyframes mi{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-title{font-size:1.3rem;font-weight:700;margin-bottom.5rem;margin-bottom:.5rem}
+.modal-sub{color:var(--muted);font-size:.88rem;margin-bottom:1.2rem}
+.star-row{display:flex;gap:.4rem;justify-content:center;margin-bottom:1.2rem}
+.star-btn{font-size:2rem;cursor:pointer;transition:transform .1s;color:#444;line-height:1}
+.star-btn.lit{color:var(--gold)}
+.star-btn:hover{transform:scale(1.2)}
+.review-textarea{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);padding:.8rem 1rem;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.9rem;resize:none;outline:none;margin-bottom:1rem;transition:border-color .3s}
+.review-textarea:focus{border-color:var(--gold)}
+.btn-submit-review{width:100%;padding:.85rem;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#000;border:none;border-radius:10px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;font-size:1rem}
+.btn-close{background:transparent;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;float:right;margin-top:-.5rem}
+/* TOAST */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.9rem 1.4rem;z-index:9999;display:none;font-size:.9rem}
+.toast.show{display:flex;align-items:center;gap:.5rem}
+.toast.success{border-color:var(--green)}
+.toast.error{border-color:var(--red)}
+/* LOADING */
+.skeleton{background:linear-gradient(90deg,var(--card) 25%,rgba(255,255,255,0.04) 50%,var(--card) 75%);background-size:200% 100%;animation:sh 1.5s infinite;border-radius:14px;height:120px;margin-bottom:1rem}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/customer" class="nav-logo">✂️ Urban HairPlaza</a>
+  <div style="display:flex;gap:1.5rem;align-items:center">
+    <a href="/customer" style="color:var(--muted)">← Browse Salons</a>
+    <span id="navUser" style="color:var(--gold);font-size:.9rem"></span>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <h1 class="page-title">My Bookings</h1>
+    <p class="page-sub">Manage all your salon appointments</p>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="filterTab('all',this)">All</button>
+    <button class="tab-btn" onclick="filterTab('confirmed',this)">Upcoming</button>
+    <button class="tab-btn" onclick="filterTab('completed',this)">Completed</button>
+    <button class="tab-btn" onclick="filterTab('cancelled',this)">Cancelled</button>
+  </div>
+
+  <div id="bookingsList">
+    <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+  </div>
+</div>
+
+<!-- REVIEW MODAL -->
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal">
+    <button class="btn-close" onclick="closeReview()">✕</button>
+    <div class="modal-title" style="margin-bottom:.3rem">Leave a Review</div>
+    <div class="modal-sub" id="reviewModalSub"></div>
+    <div class="star-row" id="starRow">
+      <span class="star-btn" data-v="1" onclick="setStar(1)">★</span>
+      <span class="star-btn" data-v="2" onclick="setStar(2)">★</span>
+      <span class="star-btn" data-v="3" onclick="setStar(3)">★</span>
+      <span class="star-btn" data-v="4" onclick="setStar(4)">★</span>
+      <span class="star-btn" data-v="5" onclick="setStar(5)">★</span>
+    </div>
+    <textarea class="review-textarea" id="reviewComment" rows="4" placeholder="Share your experience..."></textarea>
+    <div style="color:var(--red);font-size:.82rem;margin-bottom:.6rem;display:none" id="reviewErr"></div>
+    <button class="btn-submit-review" onclick="submitReview()">Submit Review</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:3000/api';
+const getToken = () => localStorage.getItem('uhp_token');
+const getUser = () => { try { return JSON.parse(localStorage.getItem('uhp_user')); } catch { return null; } };
+
+// Auth guard
+const user = getUser();
+if (!user) { window.location.href = '/customer/index.html'; }
+document.getElementById('navUser').textContent = user?.name || '';
+
+let allBookings = [];
+let currentTab = 'all';
+let reviewBookingId = null;
+let selectedRating = 0;
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const STATUS_LABELS = { confirmed:'Upcoming', completed:'Completed', cancelled:'Cancelled', no_show:'No Show', pending:'Pending' };
+
+async function loadBookings() {
+  try {
+    const r = await fetch(`${API}/bookings`, {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!r.ok) throw new Error('Failed');
+    allBookings = await r.json();
+    render();
+  } catch(e) {
+    document.getElementById('bookingsList').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load bookings. Is the server running?</p></div>`;
+  }
+}
+
+function render() {
+  let filtered = allBookings;
+  if (currentTab === 'confirmed') filtered = allBookings.filter(b => b.status === 'confirmed' || b.status === 'pending');
+  else if (currentTab === 'completed') filtered = allBookings.filter(b => b.status === 'completed');
+  else if (currentTab === 'cancelled') filtered = allBookings.filter(b => b.status === 'cancelled' || b.status === 'no_show');
+
+  if (!filtered.length) {
+    document.getElementById('bookingsList').innerHTML = `<div class="empty"><div class="empty-icon">📅</div><p>No ${currentTab === 'all' ? '' : currentTab} bookings found.</p><a href="/customer" style="color:var(--gold);margin-top:1rem;display:inline-block">Browse Salons →</a></div>`;
+    return;
+  }
+
+  document.getElementById('bookingsList').innerHTML = filtered.map(b => {
+    const d = new Date(b.booking_date);
+    const isUpcoming = b.status === 'confirmed' || b.status === 'pending';
+    const isCompleted = b.status === 'completed';
+    const services = b.services || [];
+    const statusClass = 'status-' + b.status;
+    const statusLabel = STATUS_LABELS[b.status] || b.status;
+
+    let actions = '';
+    if (isUpcoming) {
+      actions = `<button class="btn-action btn-cancel" onclick="cancelBooking(${b.id})">Cancel</button>`;
+    } else if (isCompleted && !b.review) {
+      actions = `<button class="btn-action btn-review" onclick="openReview(${b.id},'${b.salon_name}')">⭐ Leave Review</button>`;
+    } else if (isCompleted && b.review) {
+      actions = `<div class="reviewed-stars">${'★'.repeat(b.review.rating)}${'☆'.repeat(5-b.review.rating)}</div><div style="font-size:.75rem;color:var(--muted)">Reviewed</div>`;
+    }
+
+    return `<div class="booking-card">
+      <div class="date-block">
+        <div class="date-month">${MONTHS[d.getMonth()]}</div>
+        <div class="date-day">${String(d.getDate()).padStart(2,'0')}</div>
+        <div class="date-year">${d.getFullYear()}</div>
+      </div>
+      <div class="booking-info">
+        <div class="salon-name">${b.salon_name}</div>
+        <div class="meta">
+          <span>⏰ ${b.start_time}${b.end_time ? ' – '+b.end_time : ''}</span>
+          ${b.staff_name ? `<span>👤 ${b.staff_name}</span>` : ''}
+          <span>🏙️ ${b.salon_city || ''}</span>
+        </div>
+        <div class="services-list">${services.map(s => `<span>${s.name}</span>`).join('')}</div>
+        ${b.coupon_code ? `<div style="font-size:.8rem;color:var(--green)">🎟️ Coupon: ${b.coupon_code}</div>` : ''}
+      </div>
+      <div class="booking-right">
+        <span class="status-badge ${statusClass}">${statusLabel}</span>
+        <span class="amount">₹${(b.total_price_snapshot||0).toLocaleString('en-IN')}</span>
+        <div class="action-btns">${actions}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+async function cancelBooking(id) {
+  if (!confirm('Cancel this booking?')) return;
+  const r = await fetch(`${API}/bookings/${id}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type':'application/json','Authorization':'Bearer '+getToken() },
+    body: JSON.stringify({ status: 'cancelled' })
+  });
+  if (r.ok) {
+    const b = allBookings.find(b => b.id === id);
+    if (b) b.status = 'cancelled';
+    render();
+    showToast('✅ Booking cancelled','success');
+  } else {
+    showToast('❌ Could not cancel booking','error');
+  }
+}
+
+// ── Review ────────────────────────────────────────────────────────────────
+function openReview(bookingId, salonName) {
+  reviewBookingId = bookingId;
+  selectedRating = 0;
+  document.getElementById('reviewModalSub').textContent = 'Rating for: ' + salonName;
+  document.querySelectorAll('.star-btn').forEach(s => s.classList.remove('lit'));
+  document.getElementById('reviewComment').value = '';
+  document.getElementById('reviewErr').style.display = 'none';
+  document.getElementById('reviewModal').classList.add('open');
+}
+
+function closeReview() {
+  document.getElementById('reviewModal').classList.remove('open');
+}
+
+function setStar(n) {
+  selectedRating = n;
+  document.querySelectorAll('.star-btn').forEach((s,i) => s.classList.toggle('lit', i < n));
+}
+
+async function submitReview() {
+  const errEl = document.getElementById('reviewErr');
+  if (!selectedRating) { errEl.textContent = 'Please select a star rating.'; errEl.style.display = 'block'; return; }
+  const comment = document.getElementById('reviewComment').value.trim();
+  const r = await fetch(`${API}/bookings/${reviewBookingId}/review`, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json','Authorization':'Bearer '+getToken() },
+    body: JSON.stringify({ rating: selectedRating, comment })
+  });
+  const data = await r.json();
+  if (!r.ok) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
+  closeReview();
+  showToast('⭐ Review submitted! Thank you.','success');
+  const b = allBookings.find(b => b.id === reviewBookingId);
+  if (b) b.review = { rating: selectedRating, comment };
+  render();
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+loadBookings();
+</script>
+</body>
+</html>

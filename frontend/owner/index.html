@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Owner Dashboard | Urban HairPlaza</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--gold:#D4AF37;--gl:#F5D878;--gdim:rgba(212,175,55,0.15);--bg:#0A0A0F;--card:#12121A;--sidebar:#0D0D15;--text:#F0F0F0;--muted:#8B8BA0;--border:rgba(212,175,55,0.15);--green:#10B981;--red:#EF4444;--blue:#3B82F6;--orange:#F59E0B}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+a{color:inherit;text-decoration:none}
+/* SIDEBAR */
+.sidebar{width:240px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;z-index:100}
+.sb-logo{padding:1.5rem 1.2rem;border-bottom:1px solid var(--border);font-size:1.2rem;font-weight:700;background:linear-gradient(135deg,var(--gold),var(--gl));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-nav{flex:1;padding:.8rem 0;overflow-y:auto}
+.sb-link{display:flex;align-items:center;gap:.75rem;padding:.8rem 1.2rem;color:var(--muted);font-size:.9rem;transition:all .2s;border-left:3px solid transparent;cursor:pointer}
+.sb-link:hover{color:var(--text);background:rgba(255,255,255,0.03)}
+.sb-link.active{color:var(--gold);border-left-color:var(--gold);background:var(--gdim)}
+.sb-icon{font-size:1.1rem;width:20px;text-align:center}
+.sb-footer{padding:1rem 1.2rem;border-top:1px solid var(--border)}
+.sb-user{font-size:.85rem;color:var(--muted);margin-bottom:.6rem}
+.sb-user span{display:block;color:var(--text);font-weight:600}
+.btn-logout{width:100%;padding:.55rem;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.82rem;transition:all .2s}
+.btn-logout:hover{border-color:var(--red);color:var(--red)}
+/* MAIN */
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{padding:1rem 2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:rgba(10,10,15,0.6);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50}
+.topbar-title{font-size:1.3rem;font-weight:700}
+.topbar-right{color:var(--muted);font-size:.88rem}
+.content{padding:2rem}
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.3rem;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;background:var(--gdim);transform:translate(20px,-20px)}
+.kpi-icon{font-size:1.5rem;margin-bottom:.6rem}
+.kpi-label{font-size:.78rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;margin-bottom:.3rem}
+.kpi-value{font-size:1.8rem;font-weight:800;color:var(--gold)}
+/* SECTION */
+.section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem}
+.section-title{font-size:1rem;font-weight:700;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center}
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{color:var(--muted);font-weight:600;text-align:left;padding:.6rem .8rem;border-bottom:1px solid var(--border);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+td{padding:.7rem .8rem;border-bottom:1px solid rgba(255,255,255,0.04)}
+tr:last-child td{border:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.badge{padding:.2rem .65rem;border-radius:12px;font-size:.75rem;font-weight:600}
+.badge-confirmed{background:rgba(59,130,246,0.15);color:var(--blue)}
+.badge-completed{background:rgba(16,185,129,0.15);color:var(--green)}
+.badge-cancelled{background:rgba(239,68,68,0.1);color:var(--red)}
+.badge-no_show{background:rgba(245,158,11,0.1);color:var(--orange)}
+.badge-pending{background:rgba(139,92,246,0.15);color:#8B5CF6}
+.btn-sm{padding:.3rem .8rem;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;font-family:'Outfit',sans-serif;transition:all .2s}
+.btn-sm-green{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3)}
+.btn-sm-green:hover{background:var(--green);color:#fff}
+.btn-sm-orange{background:rgba(245,158,11,0.1);color:var(--orange);border:1px solid rgba(245,158,11,0.2)}
+.btn-sm-orange:hover{background:var(--orange);color:#000}
+/* CHART */
+canvas{max-width:100%}
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.8rem 1.2rem;z-index:9999;display:none;font-size:.88rem}
+.toast.show{display:flex;align-items:center;gap:.5rem}
+.toast.success{border-color:var(--green)}
+.toast.error{border-color:var(--red)}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}}
+</style>
+</head>
+<body>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo">✂️ Urban HairPlaza</div>
+  <nav class="sb-nav">
+    <a href="/owner/index.html" class="sb-link active"><span class="sb-icon">📊</span> Dashboard</a>
+    <a href="/owner/bookings.html" class="sb-link"><span class="sb-icon">📅</span> Bookings</a>
+    <a href="/owner/services.html" class="sb-link"><span class="sb-icon">💇</span> Services</a>
+    <a href="/owner/staff.html" class="sb-link"><span class="sb-icon">👥</span> Staff</a>
+    <a href="/owner/settings.html" class="sb-link"><span class="sb-icon">⚙️</span> Salon Settings</a>
+    <a href="/owner/analytics.html" class="sb-link"><span class="sb-icon">📈</span> Analytics</a>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-user">Salon Owner<span id="sbOwnerName">—</span></div>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Dashboard</div>
+    <div class="topbar-right" id="salonNameBar">Loading...</div>
+  </div>
+  <div class="content">
+    <!-- KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-icon">📅</div><div class="kpi-label">Today's Bookings</div><div class="kpi-value" id="kpiToday">—</div></div>
+      <div class="kpi-card"><div class="kpi-icon">💰</div><div class="kpi-label">Monthly Revenue</div><div class="kpi-value" id="kpiRevenue">—</div></div>
+      <div class="kpi-card"><div class="kpi-icon">👥</div><div class="kpi-label">Active Staff</div><div class="kpi-value" id="kpiStaff">—</div></div>
+      <div class="kpi-card"><div class="kpi-icon">⭐</div><div class="kpi-label">Avg Rating</div><div class="kpi-value" id="kpiRating">—</div></div>
+    </div>
+
+    <!-- UPCOMING BOOKINGS -->
+    <div class="section">
+      <div class="section-title">Upcoming Bookings <a href="/owner/bookings.html" style="color:var(--gold);font-size:.82rem">View All →</a></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Customer</th><th>Services</th><th>Date</th><th>Time</th><th>Staff</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="upcomingTable"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- REVENUE CHART -->
+    <div class="section">
+      <div class="section-title">Revenue — Last 7 Days</div>
+      <canvas id="revenueChart" height="180"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:3000/api';
+const getToken = () => localStorage.getItem('uhp_token');
+const getUser = () => { try { return JSON.parse(localStorage.getItem('uhp_user')); } catch { return null; } };
+
+const user = getUser();
+if (!user || user.role !== 'owner') { window.location.href = '/customer/index.html'; }
+document.getElementById('sbOwnerName').textContent = user?.name || '';
+
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function logout() { localStorage.clear(); window.location.href = '/customer/index.html'; }
+
+const headers = { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' };
+
+async function load() {
+  const today = new Date().toISOString().split('T')[0];
+  const inWeek = new Date(); inWeek.setDate(inWeek.getDate() + 7);
+  const toDate = inWeek.toISOString().split('T')[0];
+
+  const [analyticsRes, bookingsRes, salonRes] = await Promise.all([
+    fetch(`${API}/owner/analytics`, { headers }),
+    fetch(`${API}/owner/bookings?date_from=${today}&date_to=${toDate}`, { headers }),
+    fetch(`${API}/owner/salon`, { headers }),
+  ]);
+
+  const analytics = await analyticsRes.json();
+  const bookings = await bookingsRes.json();
+  const salon = await salonRes.json();
+
+  // KPIs
+  document.getElementById('salonNameBar').textContent = salon.name || '';
+  document.getElementById('kpiToday').textContent = analytics.today_bookings ?? '—';
+  document.getElementById('kpiRevenue').textContent = analytics.monthly_revenue != null ? '₹' + Math.round(analytics.monthly_revenue).toLocaleString('en-IN') : '—';
+  document.getElementById('kpiStaff').textContent = analytics.active_staff ?? '—';
+  document.getElementById('kpiRating').textContent = analytics.avg_rating ? analytics.avg_rating.toFixed(1) + ' ⭐' : '—';
+
+  // Upcoming table
+  const tbody = document.getElementById('upcomingTable');
+  if (!bookings.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.5rem">No upcoming bookings</td></tr>';
+  } else {
+    tbody.innerHTML = bookings.slice(0, 15).map(b => `
+      <tr>
+        <td><strong>${b.customer_name}</strong><br><span style="color:var(--muted);font-size:.78rem">${b.customer_phone||''}</span></td>
+        <td>${(b.services||[]).map(s => s.name).join(', ') || '—'}</td>
+        <td>${b.booking_date}</td>
+        <td>${b.start_time} – ${b.end_time}</td>
+        <td>${b.staff_name || 'Any'}</td>
+        <td><span class="badge badge-${b.status}">${b.status}</span></td>
+        <td>
+          ${b.status === 'confirmed' ? `
+            <button class="btn-sm btn-sm-green" onclick="updateStatus(${b.id},'completed')">✓ Complete</button>
+            <button class="btn-sm btn-sm-orange" style="margin-left:.3rem" onclick="updateStatus(${b.id},'no_show')">✗ No Show</button>` : ''}
+        </td>
+      </tr>`).join('');
+  }
+
+  // Revenue chart
+  drawRevenueChart(analytics.revenue_last_30_days || []);
+}
+
+async function updateStatus(id, status) {
+  const r = await fetch(`${API}/bookings/${id}/status`, {
+    method: 'PATCH', headers, body: JSON.stringify({ status })
+  });
+  if (r.ok) { toast('✅ Booking updated'); load(); }
+  else toast('❌ Failed to update', 'error');
+}
+
+function drawRevenueChart(data) {
+  const canvas = document.getElementById('revenueChart');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 180;
+
+  // Last 7 days
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push(d.toISOString().split('T')[0]);
+  }
+  const amounts = days.map(d => { const row = data.find(r => r.date === d); return row ? row.amount : 0; });
+  const max = Math.max(...amounts, 1);
+  const labels = days.map(d => new Date(d).toLocaleDateString('en-IN',{weekday:'short'}));
+
+  const W = canvas.width, H = canvas.height;
+  const pad = { t: 20, b: 30, l: 50, r: 20 };
+  const barW = Math.floor((W - pad.l - pad.r) / days.length * 0.6);
+  const gap = Math.floor((W - pad.l - pad.r) / days.length);
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + (H - pad.t - pad.b) * i / 4;
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    const val = max - max * i / 4;
+    ctx.fillStyle = '#8B8BA0'; ctx.font = '10px Outfit'; ctx.textAlign = 'right';
+    ctx.fillText('₹' + Math.round(val).toLocaleString('en-IN'), pad.l - 4, y + 4);
+  }
+
+  // Animate bars
+  let progress = 0;
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+    // Redraw grid
+    for (let i = 0; i <= 4; i++) {
+      const y = pad.t + (H - pad.t - pad.b) * i / 4;
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+      ctx.fillStyle = '#8B8BA0'; ctx.font = '10px Outfit'; ctx.textAlign = 'right';
+      ctx.fillText('₹' + Math.round(max - max*i/4).toLocaleString('en-IN'), pad.l-4, y+4);
+    }
+    amounts.forEach((val, i) => {
+      const x = pad.l + i * gap + (gap - barW) / 2;
+      const barH = ((H - pad.t - pad.b) * val / max) * progress;
+      const y = H - pad.b - barH;
+      const grad = ctx.createLinearGradient(0, y, 0, H - pad.b);
+      grad.addColorStop(0, '#D4AF37'); grad.addColorStop(1, 'rgba(212,175,55,0.2)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(x, y, barW, barH, [4,4,0,0]);
+      ctx.fill();
+      // Labels
+      ctx.fillStyle = '#8B8BA0'; ctx.font = '10px Outfit'; ctx.textAlign = 'center';
+      ctx.fillText(labels[i], x + barW/2, H - 8);
+    });
+    progress += 0.05;
+    if (progress < 1) requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+load();
+</script>
+</body>
+</html>

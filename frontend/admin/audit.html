@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit Logs | Admin Console</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--gold:#D4AF37;--gl:#F5D878;--gdim:rgba(212,175,55,0.15);--bg:#0A0A0F;--card:#12121A;--sidebar:#0D0D15;--text:#F0F0F0;--muted:#8B8BA0;--border:rgba(212,175,55,0.15);--green:#10B981;--red:#EF4444;--blue:#3B82F6;--orange:#F59E0B;--purple:#8B5CF6}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+a{color:inherit;text-decoration:none}
+.sidebar{width:240px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;z-index:100}
+.sb-logo{padding:1.5rem 1.2rem;border-bottom:1px solid var(--border)}
+.sb-logo-text{font-size:1.1rem;font-weight:700;background:linear-gradient(135deg,var(--gold),var(--gl));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-nav{flex:1;padding:.8rem 0}
+.sb-link{display:flex;align-items:center;gap:.75rem;padding:.8rem 1.2rem;color:var(--muted);font-size:.9rem;transition:all .2s;border-left:3px solid transparent}
+.sb-link:hover{color:var(--text);background:rgba(255,255,255,0.03)}
+.sb-link.active{color:var(--gold);border-left-color:var(--gold);background:var(--gdim)}
+.sb-footer{padding:1rem 1.2rem;border-top:1px solid var(--border)}
+.sb-user{font-size:.85rem;color:var(--muted);margin-bottom:.6rem}
+.sb-user span{display:block;color:var(--text);font-weight:600}
+.btn-logout{width:100%;padding:.55rem;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.82rem}
+.btn-logout:hover{border-color:var(--red);color:var(--red)}
+.main{margin-left:240px;flex:1}
+.topbar{padding:1rem 2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;background:rgba(10,10,15,.9);backdrop-filter:blur(12px)}
+.topbar-title{font-size:1.3rem;font-weight:700}
+.content{padding:1.5rem 2rem}
+/* FILTERS */
+.filter-bar{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1.5rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;align-items:center}
+.filter-input{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text);padding:.5rem .9rem;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.88rem;outline:none}
+.filter-input:focus{border-color:var(--gold)}
+.btn-filter{padding:.5rem 1.2rem;background:var(--gdim);border:1px solid var(--gold);color:var(--gold);border-radius:8px;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:600;font-size:.88rem}
+/* TIMELINE */
+.log-list{display:flex;flex-direction:column;gap:0}
+.log-item{display:grid;grid-template-columns:24px 1fr;gap:1rem;padding:.8rem 0;border-bottom:1px solid rgba(255,255,255,.04);position:relative}
+.log-item:last-child{border:none}
+.log-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;margin-top:.1rem}
+.log-body{}
+.log-header{display:flex;align-items:center;gap.5rem;flex-wrap:wrap;gap:.5rem;margin-bottom:.25rem}
+.log-action{font-weight:600;font-size:.9rem}
+.log-entity{background:rgba(255,255,255,.06);padding:.1rem .5rem;border-radius:6px;font-size:.78rem;color:var(--muted)}
+.log-time{color:var(--muted);font-size:.75rem;margin-left:auto}
+.log-meta{font-size:.82rem;color:var(--muted);line-height:1.5}
+.log-actor{font-size:.78rem;color:var(--muted);margin-top:.15rem}
+/* ACTION COLORS */
+.dot-approve{background:rgba(16,185,129,.2);color:var(--green)}
+.dot-reject{background:rgba(239,68,68,.15);color:var(--red)}
+.dot-create{background:rgba(59,130,246,.15);color:var(--blue)}
+.dot-update{background:rgba(245,158,11,.15);color:var(--orange)}
+.dot-default{background:rgba(139,92,246,.15);color:var(--purple)}
+/* PAGINATION */
+.pagination{display:flex;gap:.4rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap}
+.page-btn{padding:.4rem .8rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;font-size:.85rem;transition:all .2s}
+.page-btn.active{background:var(--gdim);border-color:var(--gold);color:var(--gold)}
+.page-btn:hover:not(.active){border-color:var(--muted);color:var(--text)}
+.section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem}
+.total-label{color:var(--muted);font-size:.88rem;margin-bottom:1rem}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sb-logo"><div class="sb-logo-text">⚙️ Admin Console</div><div style="font-size:.72rem;color:var(--muted);margin-top:.2rem">Urban HairPlaza</div></div>
+  <nav class="sb-nav">
+    <a href="/admin/index.html" class="sb-link"><span>📊</span> Dashboard</a>
+    <a href="/admin/salons.html" class="sb-link"><span>🏪</span> Salons</a>
+    <a href="/admin/analytics.html" class="sb-link"><span>📈</span> Analytics</a>
+    <a href="/admin/subscriptions.html" class="sb-link"><span>💎</span> Plans</a>
+    <a href="/admin/audit.html" class="sb-link active"><span>📋</span> Audit Logs</a>
+  </nav>
+  <div class="sb-footer"><div class="sb-user">Super Admin<span id="sbName">—</span></div><button class="btn-logout" onclick="logout()">Sign Out</button></div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Audit Logs</div>
+    <div id="topTotal" style="color:var(--muted);font-size:.85rem"></div>
+  </div>
+  <div class="content">
+    <div class="filter-bar">
+      <select class="filter-input" id="fAction">
+        <option value="">All Actions</option>
+        <option value="approve">Approve</option>
+        <option value="reject">Reject</option>
+        <option value="create">Create</option>
+        <option value="update">Update</option>
+      </select>
+      <select class="filter-input" id="fEntity">
+        <option value="">All Entities</option>
+        <option value="salon">Salon</option>
+        <option value="booking">Booking</option>
+        <option value="service">Service</option>
+        <option value="staff">Staff</option>
+        <option value="plan">Plan</option>
+      </select>
+      <button class="btn-filter" onclick="load(1)">Apply</button>
+    </div>
+    <div class="section">
+      <div class="total-label" id="totalLabel"></div>
+      <div id="logList"><div style="color:var(--muted)">Loading...</div></div>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:3000/api';
+const getToken = () => localStorage.getItem('uhp_token');
+const getUser = () => { try { return JSON.parse(localStorage.getItem('uhp_user')); } catch { return null; } };
+const user = getUser();
+if (!user || user.role !== 'admin') window.location.href = '/customer/index.html';
+document.getElementById('sbName').textContent = user?.name || '';
+const headers = { 'Authorization': 'Bearer ' + getToken() };
+
+function logout() { localStorage.clear(); window.location.href='/customer/index.html'; }
+
+const ACTION_ICONS = { approve:'✅', reject:'❌', create:'➕', update:'✏️', default:'📋' };
+const ACTION_DOT = { approve:'dot-approve', reject:'dot-reject', create:'dot-create', update:'dot-update', default:'dot-default' };
+
+let currentPage = 1;
+
+async function load(page = 1) {
+  currentPage = page;
+  const params = new URLSearchParams({ page, limit: 20 });
+  const action = document.getElementById('fAction').value;
+  const entity = document.getElementById('fEntity').value;
+  if (action) params.set('action', action);
+  if (entity) params.set('entity_type', entity);
+
+  const r = await fetch(`${API}/admin/audit-logs?${params}`, { headers });
+  const data = await r.json();
+  const { logs, total, pages } = data;
+
+  document.getElementById('topTotal').textContent = total + ' log entries';
+  document.getElementById('totalLabel').textContent = `Showing ${logs.length} of ${total} entries (Page ${page} of ${pages})`;
+
+  document.getElementById('logList').innerHTML = logs.map(log => {
+    const action = log.action?.toLowerCase() || 'default';
+    const icon = ACTION_ICONS[action] || ACTION_ICONS.default;
+    const dotClass = ACTION_DOT[action] || ACTION_DOT.default;
+    const dt = new Date(log.created_at);
+    const timeStr = dt.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) + ' ' + dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    let metadata = '';
+    try { const m = JSON.parse(log.metadata_json||'{}'); metadata = Object.entries(m).map(([k,v])=>`<span>${k}: <strong>${v}</strong></span>`).join(' · '); } catch {}
+    return `<div class="log-item">
+      <div class="log-dot ${dotClass}">${icon}</div>
+      <div class="log-body">
+        <div class="log-header">
+          <span class="log-action">${log.action?.toUpperCase()}</span>
+          <span class="log-entity">${log.entity_type} #${log.entity_id}</span>
+          <span class="log-time">${timeStr}</span>
+        </div>
+        <div class="log-meta">${metadata}</div>
+        <div class="log-actor">👤 ${log.actor_name || 'System'} · ${log.actor_role || 'unknown'}</div>
+      </div>
+    </div>`;
+  }).join('') || '<div style="color:var(--muted);text-align:center;padding:2rem">No audit logs found</div>';
+
+  // Pagination
+  const pag = document.getElementById('pagination');
+  if (pages <= 1) { pag.innerHTML = ''; return; }
+  const range = [];
+  for (let i = Math.max(1, page-2); i <= Math.min(pages, page+2); i++) range.push(i);
+  pag.innerHTML = [
+    page > 1 ? `<button class="page-btn" onclick="load(${page-1})">← Prev</button>` : '',
+    ...range.map(p => `<button class="page-btn ${p===page?'active':''}" onclick="load(${p})">${p}</button>`),
+    page < pages ? `<button class="page-btn" onclick="load(${page+1})">Next →</button>` : '',
+  ].join('');
+}
+
+load(1);
+</script>
+</body>
+</html>

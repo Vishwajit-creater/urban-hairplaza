@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Urban HairPlaza | Discover Premium Salons</title>
+<meta name="description" content="Discover and book premium salons near you. Hair, spa, barbershop and nail services at your fingertips.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#D4AF37;--gold-light:#F5D878;--gold-dim:rgba(212,175,55,0.15);
+  --bg:#0A0A0F;--card:#12121A;--sidebar:#0D0D15;
+  --text:#F0F0F0;--muted:#8B8BA0;--border:rgba(212,175,55,0.15);
+  --purple:#8B5CF6;--green:#10B981;--red:#EF4444;--blue:#3B82F6;
+}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:inherit;text-decoration:none}
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 5%;height:70px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:1.4rem;font-weight:700;background:linear-gradient(135deg,var(--gold),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:flex;align-items:center;gap:8px}
+.nav-links{display:flex;gap:2rem;align-items:center}
+.nav-links a{color:var(--muted);font-weight:500;transition:color .3s}
+.nav-links a:hover{color:var(--gold)}
+.nav-auth{display:flex;gap:1rem;align-items:center}
+.btn{padding:.6rem 1.4rem;border-radius:24px;font-family:'Outfit',sans-serif;font-weight:600;cursor:pointer;transition:all .3s;border:none;font-size:.9rem}
+.btn-outline{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+.btn-outline:hover{background:var(--gold);color:#000}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#000}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(212,175,55,0.4)}
+/* HERO */
+.hero{position:relative;min-height:85vh;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;padding:2rem 5%}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(212,175,55,0.12) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 80% 80%,rgba(139,92,246,0.08) 0%,transparent 60%)}
+.hero-content{position:relative;z-index:1;max-width:800px}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(212,175,55,0.1);border:1px solid var(--gold-dim);padding:.4rem 1rem;border-radius:24px;font-size:.85rem;color:var(--gold);margin-bottom:1.5rem}
+.hero h1{font-size:clamp(2.2rem,5vw,4rem);font-weight:800;line-height:1.15;margin-bottom:1.2rem}
+.hero h1 span{background:linear-gradient(135deg,var(--gold),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:1.15rem;color:var(--muted);margin-bottom:2.5rem;max-width:560px;margin-left:auto;margin-right:auto}
+.search-bar{display:flex;gap:.75rem;background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:16px;padding:.75rem;max-width:680px;margin:0 auto 1.5rem;flex-wrap:wrap}
+.search-bar input{flex:1;min-width:180px;background:transparent;border:none;outline:none;color:var(--text);font-size:1rem;font-family:'Outfit',sans-serif;padding:.3rem .5rem}
+.search-bar select{background:var(--card);border:1px solid var(--border);color:var(--text);padding:.5rem .8rem;border-radius:8px;font-family:'Outfit',sans-serif;cursor:pointer;outline:none}
+.btn-search{padding:.6rem 1.6rem;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#000;border:none;border-radius:10px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Outfit',sans-serif;transition:all .3s}
+.btn-search:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(212,175,55,0.4)}
+.btn-location{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.5rem 1rem;border-radius:24px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .3s;font-size:.9rem}
+.btn-location:hover{border-color:var(--gold);color:var(--gold)}
+.hero-stats{display:flex;gap:3rem;justify-content:center;margin-top:3rem;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-num{font-size:2rem;font-weight:800;color:var(--gold)}
+.stat-label{color:var(--muted);font-size:.9rem;margin-top:.2rem}
+/* FILTER BAR */
+.filter-bar{padding:1.5rem 5%;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.pills{display:flex;gap:.6rem;flex-wrap:wrap}
+.pill{padding:.45rem 1.1rem;border-radius:24px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;font-size:.88rem;transition:all .3s}
+.pill.active,.pill:hover{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+.sort-select{background:var(--card);border:1px solid var(--border);color:var(--text);padding:.5rem 1rem;border-radius:8px;font-family:'Outfit',sans-serif;cursor:pointer;outline:none}
+/* GRID */
+.salons-section{padding:3rem 5%}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+.section-title{font-size:1.5rem;font-weight:700}
+.salon-count{color:var(--muted);font-size:.9rem}
+.salon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+@media(max-width:1024px){.salon-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.salon-grid{grid-template-columns:1fr}.search-bar{flex-direction:column}.hero-stats{gap:1.5rem}}
+/* CARD */
+.salon-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .3s;position:relative}
+.salon-card:hover{transform:translateY(-6px);box-shadow:0 20px 48px rgba(212,175,55,0.12);border-color:rgba(212,175,55,0.4)}
+.card-img{width:100%;height:200px;object-fit:cover;display:block}
+.card-img-placeholder{height:200px;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center;font-size:3rem}
+.card-badge{position:absolute;top:12px;left:12px;padding:.25rem .75rem;border-radius:24px;font-size:.75rem;font-weight:600;background:rgba(10,10,15,0.85);backdrop-filter:blur(8px);border:1px solid var(--gold-dim);color:var(--gold)}
+.card-body{padding:1.2rem}
+.card-name{font-size:1.1rem;font-weight:700;margin-bottom:.3rem}
+.card-city{color:var(--muted);font-size:.88rem;margin-bottom:.6rem;display:flex;align-items:center;gap:.3rem}
+.card-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+.stars{color:var(--gold);font-size:.9rem}
+.rating-text{color:var(--muted);font-size:.8rem;margin-left:.3rem}
+.price-range{color:var(--text);font-weight:600;font-size:.9rem}
+.card-footer{padding:.8rem 1.2rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.card-distance{color:var(--muted);font-size:.8rem}
+.btn-book{padding:.4rem 1.1rem;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#000;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.85rem;transition:all .3s}
+.btn-book:hover{transform:scale(1.05)}
+/* SKELETON */
+.skeleton{background:linear-gradient(90deg,var(--card) 25%,rgba(255,255,255,0.05) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-card{border-radius:16px;overflow:hidden;height:340px}
+/* EMPTY */
+.empty{text-align:center;padding:5rem 2rem;color:var(--muted)}
+.empty-icon{font-size:4rem;margin-bottom:1rem}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem;width:100%;max-width:440px;position:relative;animation:modalIn .3s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal h2{font-size:1.5rem;font-weight:700;margin-bottom:.4rem}
+.modal p{color:var(--muted);font-size:.9rem;margin-bottom:1.5rem}
+.modal-close{position:absolute;top:1rem;right:1rem;background:transparent;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer}
+.modal-close:hover{color:var(--text)}
+.form-group{margin-bottom:1.2rem}
+.form-label{display:block;font-size:.88rem;font-weight:500;margin-bottom:.4rem;color:var(--muted)}
+.form-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);padding:.75rem 1rem;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.95rem;outline:none;transition:border-color .3s}
+.form-input:focus{border-color:var(--gold)}
+.form-select{width:100%;background:var(--sidebar);border:1px solid var(--border);color:var(--text);padding:.75rem 1rem;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.95rem;outline:none}
+.form-error{color:var(--red);font-size:.82rem;margin-top:.4rem;display:none}
+.modal-footer{display:flex;flex-direction:column;gap:.8rem;margin-top:1.5rem}
+.modal-switch{text-align:center;font-size:.88rem;color:var(--muted)}
+.modal-switch a{color:var(--gold);cursor:pointer}
+/* USER MENU */
+.user-menu{position:relative}
+.user-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;border:2px solid var(--gold-dim)}
+.user-dropdown{position:absolute;right:0;top:calc(100% + 8px);background:var(--card);border:1px solid var(--border);border-radius:12px;min-width:180px;overflow:hidden;display:none;z-index:200}
+.user-dropdown.open{display:block}
+.user-dropdown a,.user-dropdown button{display:block;width:100%;padding:.7rem 1rem;color:var(--text);background:transparent;border:none;text-align:left;font-family:'Outfit',sans-serif;cursor:pointer;font-size:.9rem;transition:background .2s}
+.user-dropdown a:hover,.user-dropdown button:hover{background:rgba(255,255,255,0.05)}
+/* TOAST */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.9rem 1.4rem;z-index:9999;display:none;animation:slideUp .3s ease;font-size:.92rem}
+.toast.show{display:flex;align-items:center;gap:.6rem}
+.toast.success{border-color:var(--green)}
+.toast.error{border-color:var(--red)}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:3rem 5%;margin-top:4rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;color:var(--muted);font-size:.88rem}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="/customer" class="nav-logo">✂️ Urban HairPlaza</a>
+  <div class="nav-links">
+    <a href="/customer">Salons</a>
+    <a href="/customer/bookings.html">My Bookings</a>
+  </div>
+  <div class="nav-auth" id="navAuth">
+    <button class="btn btn-outline" onclick="openModal('loginModal')">Login</button>
+    <button class="btn btn-gold" onclick="openModal('registerModal')">Register</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">✨ India's Premium Salon Network</div>
+    <h1>Discover <span>Premium Salons</span> Near You</h1>
+    <p class="hero-sub">Book top-rated hair, beauty, spa, and grooming services in your city — instantly.</p>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search salon name or city..." oninput="debounceSearch()">
+      <select id="categorySelect" onchange="filterSalons()">
+        <option value="">All Categories</option>
+        <option value="Hair">✂️ Hair</option>
+        <option value="Barbershop">💈 Barbershop</option>
+        <option value="Spa & Wellness">🧖 Spa & Wellness</option>
+        <option value="Nail Studio">💅 Nail Studio</option>
+      </select>
+      <button class="btn-search" onclick="filterSalons()">🔍 Search</button>
+    </div>
+    <button class="btn-location" onclick="useLocation()">📍 Use My Location</button>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num" id="cntSalons">0</div><div class="stat-label">Premium Salons</div></div>
+      <div class="stat"><div class="stat-num" id="cntServices">0</div><div class="stat-label">Services Available</div></div>
+      <div class="stat"><div class="stat-num" id="cntCustomers">0</div><div class="stat-label">Happy Customers</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="pills" id="categoryPills">
+    <button class="pill active" onclick="setCat('')" data-cat="">All</button>
+    <button class="pill" onclick="setCat('Hair')" data-cat="Hair">✂️ Hair</button>
+    <button class="pill" onclick="setCat('Barbershop')" data-cat="Barbershop">💈 Barbershop</button>
+    <button class="pill" onclick="setCat('Spa & Wellness')" data-cat="Spa & Wellness">🧖 Spa</button>
+    <button class="pill" onclick="setCat('Nail Studio')" data-cat="Nail Studio">💅 Nails</button>
+  </div>
+  <select class="sort-select" id="sortSelect" onchange="filterSalons()">
+    <option value="">Sort: Featured</option>
+    <option value="rating">Highest Rated</option>
+    <option value="nearest">Nearest First</option>
+  </select>
+</div>
+
+<!-- SALON GRID -->
+<section class="salons-section">
+  <div class="section-header">
+    <div class="section-title">Available Salons</div>
+    <div class="salon-count" id="salonCount"></div>
+  </div>
+  <div class="salon-grid" id="salonGrid">
+    <!-- Skeleton loaders -->
+    <div class="skeleton skel-card"></div>
+    <div class="skeleton skel-card"></div>
+    <div class="skeleton skel-card"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="nav-logo" style="font-size:1.1rem">✂️ Urban HairPlaza</div>
+  <div>Your city's beauty, at your fingertips.</div>
+  <div>© 2024 Urban HairPlaza. All rights reserved.</div>
+</footer>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+    <h2>Welcome Back</h2>
+    <p>Sign in to book your next appointment</p>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="loginEmail" placeholder="you@example.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="loginPassword" placeholder="••••••••">
+    </div>
+    <div class="form-error" id="loginError"></div>
+    <div class="modal-footer">
+      <button class="btn btn-gold" onclick="doLogin()" style="width:100%;padding:.8rem">Sign In</button>
+      <div class="modal-switch">Don't have an account? <a onclick="switchModal('loginModal','registerModal')">Register</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="modal-overlay" id="registerModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('registerModal')">✕</button>
+    <h2>Create Account</h2>
+    <p>Join thousands of satisfied customers</p>
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input class="form-input" type="text" id="regName" placeholder="Your full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="regEmail" placeholder="you@example.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" id="regPassword" placeholder="Min. 8 characters">
+    </div>
+    <div class="form-group">
+      <label class="form-label">I am a</label>
+      <select class="form-select" id="regRole">
+        <option value="customer">Customer</option>
+        <option value="owner">Salon Owner</option>
+      </select>
+    </div>
+    <div class="form-error" id="regError"></div>
+    <div class="modal-footer">
+      <button class="btn btn-gold" onclick="doRegister()" style="width:100%;padding:.8rem">Create Account</button>
+      <div class="modal-switch">Already have an account? <a onclick="switchModal('registerModal','loginModal')">Sign In</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:3000/api';
+let allSalons = [];
+let userLocation = null;
+let searchTimer = null;
+
+// ── Auth ──────────────────────────────────────────────────────────────────
+const getToken = () => localStorage.getItem('uhp_token');
+const getUser = () => { try { return JSON.parse(localStorage.getItem('uhp_user')); } catch { return null; } };
+
+function updateNav() {
+  const user = getUser();
+  const nav = document.getElementById('navAuth');
+  if (user) {
+    const initials = user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    nav.innerHTML = `
+      <div class="user-menu">
+        <div class="user-avatar" onclick="toggleDropdown()">${initials}</div>
+        <div class="user-dropdown" id="userDropdown">
+          <a style="padding:.5rem 1rem;font-size:.78rem;color:var(--muted);display:block">${user.name}<br><span style="font-size:.72rem">${user.role}</span></a>
+          <a href="/customer/bookings.html">My Bookings</a>
+          ${user.role === 'owner' ? '<a href="/owner">Owner Dashboard</a>' : ''}
+          ${user.role === 'admin' ? '<a href="/admin">Admin Console</a>' : ''}
+          <button onclick="doLogout()">Sign Out</button>
+        </div>
+      </div>`;
+  }
+}
+
+function toggleDropdown() {
+  document.getElementById('userDropdown')?.classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.user-menu')) document.getElementById('userDropdown')?.classList.remove('open');
+});
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  try {
+    const r = await fetch(`${API}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+    const d = await r.json();
+    if (!r.ok) { errEl.textContent = d.error; errEl.style.display = 'block'; return; }
+    localStorage.setItem('uhp_token', d.token);
+    localStorage.setItem('uhp_user', JSON.stringify(d.user));
+    closeModal('loginModal');
+    updateNav();
+    showToast('✅ Welcome back, ' + d.user.name + '!', 'success');
+    if (d.user.role === 'owner') { setTimeout(() => window.location.href = '/owner', 1200); }
+    else if (d.user.role === 'admin') { setTimeout(() => window.location.href = '/admin', 1200); }
+  } catch { errEl.textContent = 'Connection error. Is the server running?'; errEl.style.display = 'block'; }
+}
+
+async function doRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const role = document.getElementById('regRole').value;
+  const errEl = document.getElementById('regError');
+  errEl.style.display = 'none';
+  try {
+    const r = await fetch(`${API}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password, role }) });
+    const d = await r.json();
+    if (!r.ok) { errEl.textContent = d.error; errEl.style.display = 'block'; return; }
+    localStorage.setItem('uhp_token', d.token);
+    localStorage.setItem('uhp_user', JSON.stringify(d.user));
+    closeModal('registerModal');
+    updateNav();
+    showToast('🎉 Account created! Welcome, ' + d.user.name + '!', 'success');
+    if (d.user.role === 'owner') { setTimeout(() => window.location.href = '/owner', 1200); }
+  } catch { errEl.textContent = 'Connection error.'; errEl.style.display = 'block'; }
+}
+
+function doLogout() {
+  localStorage.removeItem('uhp_token');
+  localStorage.removeItem('uhp_user');
+  window.location.reload();
+}
+
+// ── Modals ────────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function switchModal(from, to) { closeModal(from); openModal(to); }
+document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); }));
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Salons ────────────────────────────────────────────────────────────────
+async function loadSalons(params = {}) {
+  try {
+    const qs = new URLSearchParams(params).toString();
+    const r = await fetch(`${API}/salons${qs ? '?' + qs : ''}`);
+    allSalons = await r.json();
+    renderSalons(allSalons);
+    animateCounters();
+  } catch {
+    document.getElementById('salonGrid').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">⚠️</div><p>Could not load salons. Is the server running on port 3000?</p></div>`;
+  }
+}
+
+function renderSalons(salons) {
+  const grid = document.getElementById('salonGrid');
+  document.getElementById('salonCount').textContent = salons.length + ' salons found';
+  if (!salons.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><p>No salons found matching your search.</p></div>`;
+    return;
+  }
+  grid.innerHTML = salons.map(s => {
+    const stars = '★'.repeat(Math.round(s.avg_rating || 0)) + '☆'.repeat(5 - Math.round(s.avg_rating || 0));
+    const dist = s.distance_km ? `📍 ${s.distance_km.toFixed(1)} km away` : `📍 ${s.city}`;
+    const img = s.primary_photo ? `<img class="card-img" src="${s.primary_photo}" alt="${s.name}" loading="lazy" onerror="this.style.display='none'">` : `<div class="card-img-placeholder">✂️</div>`;
+    const price = s.min_price > 0 ? `From ₹${s.min_price.toLocaleString('en-IN')}` : 'View prices';
+    return `
+      <div class="salon-card" onclick="window.location.href='/customer/salon.html?id=${s.id}'">
+        <div style="position:relative">${img}<div class="card-badge">${s.category}</div></div>
+        <div class="card-body">
+          <div class="card-name">${s.name}</div>
+          <div class="card-city">${dist}</div>
+          <div class="card-meta">
+            <div><span class="stars">${stars}</span><span class="rating-text">${(s.avg_rating||0).toFixed(1)} (${s.review_count} reviews)</span></div>
+            <div class="price-range">${price}</div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span style="font-size:.8rem;color:var(--muted)">${s.city}</span>
+          <button class="btn-book" onclick="event.stopPropagation();window.location.href='/customer/salon.html?id=${s.id}'">Book Now →</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filterSalons() {
+  const q = document.getElementById('searchInput').value.trim();
+  const cat = document.getElementById('categorySelect').value || document.querySelector('.pill.active')?.dataset.cat || '';
+  const sort = document.getElementById('sortSelect').value;
+  const params = {};
+  if (q) params.search = q;
+  if (cat) params.category = cat;
+  if (sort) params.sort = sort;
+  if (userLocation) { params.lat = userLocation.lat; params.lng = userLocation.lng; }
+  loadSalons(params);
+}
+
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(filterSalons, 400);
+}
+
+function setCat(cat) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p.dataset.cat === cat));
+  document.getElementById('categorySelect').value = cat;
+  filterSalons();
+}
+
+function useLocation() {
+  if (!navigator.geolocation) { showToast('Geolocation not supported', 'error'); return; }
+  navigator.geolocation.getCurrentPosition(pos => {
+    userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    showToast('📍 Using your location!', 'success');
+    filterSalons();
+  }, () => showToast('Could not get location', 'error'));
+}
+
+// ── Counter animation ─────────────────────────────────────────────────────
+function animateCounters() {
+  const targets = { cntSalons: allSalons.length || 50, cntServices: 500, cntCustomers: 10000 };
+  for (const [id, target] of Object.entries(targets)) {
+    const el = document.getElementById(id);
+    let cur = 0;
+    const step = target / 50;
+    const timer = setInterval(() => {
+      cur = Math.min(cur + step, target);
+      el.textContent = Math.round(cur) + (id === 'cntCustomers' ? '+' : '+');
+      if (cur >= target) clearInterval(timer);
+    }, 30);
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+updateNav();
+loadSalons();
+</script>
+</body>
+</html>
