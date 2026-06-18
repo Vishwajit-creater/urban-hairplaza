@@ -30,16 +30,28 @@ app.use(helmet({
 }));
 
 // ── CORS ───────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000')
-  .split(',').map(o => o.trim()).filter(Boolean);
+// Allowed origins: comma-separated list in CORS_ORIGIN env var.
+// Defaults to * (allow all) so the app works out-of-the-box on Render/Amplify.
+const corsOriginEnv = process.env.CORS_ORIGIN || '*';
+const allowedOrigins = corsOriginEnv.split(',').map(o => o.trim()).filter(Boolean);
+
+// Domains always allowed regardless of CORS_ORIGIN setting
+const alwaysAllowedPatterns = [
+  /\.amplifyapp\.com$/,
+  /\.onrender\.com$/,
+  /^http:\/\/localhost(:\d+)?$/,
+];
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow requests with no origin (mobile apps, curl, Postman, same-origin)
+    // No origin = server-to-server / curl — allow
     if (!origin) return cb(null, true);
-    // In dev allow everything; in prod check allowlist
-    if (!isProd) return cb(null, true);
-    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) return cb(null, true);
+    // Wildcard = allow everything
+    if (allowedOrigins.includes('*')) return cb(null, true);
+    // Exact match
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    // Pattern match (Amplify, Render, localhost)
+    if (alwaysAllowedPatterns.some(p => p.test(origin))) return cb(null, true);
     return cb(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,
