@@ -89,8 +89,32 @@ app.get('/api/health', async (_req, res) => {
     const pool = require('./db/database');
     await pool.query('SELECT 1');
     res.json({ status: 'ok', uptime: Math.floor(process.uptime()), db: 'connected' });
-  } catch {
-    res.status(503).json({ status: 'error', db: 'disconnected' });
+  } catch (err) {
+    res.status(503).json({ status: 'error', db: 'disconnected', message: err.message });
+  }
+});
+
+// ── Debug endpoint (remove after confirming DB works) ─────────────────────
+app.get('/api/debug', async (_req, res) => {
+  const pool = require('./db/database');
+  try {
+    const { rows } = await pool.query('SELECT COUNT(*) AS cnt FROM salons');
+    const dbUrl = process.env.DATABASE_URL
+      ? process.env.DATABASE_URL.replace(/:([^:@]+)@/, ':***@')
+      : 'NOT SET';
+    res.json({
+      status: 'ok',
+      node: process.version,
+      env: process.env.NODE_ENV,
+      db_url_masked: dbUrl,
+      salons_count: rows[0].cnt,
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      error: err.message,
+      db_url_set: !!process.env.DATABASE_URL,
+    });
   }
 });
 
