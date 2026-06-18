@@ -18,10 +18,17 @@ const IS_LAMBDA = !!process.env.LAMBDA_TASK_ROOT;
 // Build connection config
 let connectionString = process.env.DATABASE_URL;
 
-// Supabase requires SSL — ensure sslmode is in the URL
-if (connectionString && !connectionString.includes('sslmode=')) {
-  const sep = connectionString.includes('?') ? '&' : '?';
-  connectionString = `${connectionString}${sep}sslmode=require`;
+// Supabase pooler (port 6543) requires pgbouncer=true
+// Supabase direct (port 5432) requires sslmode=require
+if (connectionString) {
+  if (!connectionString.includes('sslmode=')) {
+    const sep = connectionString.includes('?') ? '&' : '?';
+    connectionString += `${sep}sslmode=require`;
+  }
+  // Add pgbouncer flag for transaction pooler (port 6543)
+  if (connectionString.includes(':6543') && !connectionString.includes('pgbouncer=')) {
+    connectionString += '&pgbouncer=true';
+  }
 }
 
 const poolConfig = {
