@@ -31,15 +31,17 @@ app.use(helmet({
 
 // ── CORS ───────────────────────────────────────────────────────────────────
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000')
-  .split(',').map(o => o.trim());
+  .split(',').map(o => o.trim()).filter(Boolean);
 
 app.use(cors({
-  origin: isProd
-    ? (origin, cb) => {
-        if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-        return cb(new Error('Not allowed by CORS'));
-      }
-    : true,
+  origin: (origin, cb) => {
+    // Allow requests with no origin (mobile apps, curl, Postman, same-origin)
+    if (!origin) return cb(null, true);
+    // In dev allow everything; in prod check allowlist
+    if (!isProd) return cb(null, true);
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
 }));
 
@@ -80,6 +82,17 @@ app.use('/admin',    express.static(path.join(__dirname, '../frontend/admin'),  
 
 // Root redirect → Customer portal
 app.get('/', (_req, res) => res.redirect('/customer'));
+
+// ── Health Check (used by Render / load balancers) ────────────────────────
+app.get('/api/health', async (_req, res) => {
+  try {
+    const pool = require('./db/database');
+    await pool.query('SELECT 1');
+    res.json({ status: 'ok', uptime: Math.floor(process.uptime()), db: 'connected' });
+  } catch {
+    res.status(503).json({ status: 'error', db: 'disconnected' });
+  }
+});
 
 // ── API Routes ─────────────────────────────────────────────────────────────
 app.use('/api/auth',     require('./routes/auth'));

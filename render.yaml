@@ -1,16 +1,21 @@
 services:
   - type: web
-    name: urban-hairplaza
-    env: node
-    plan: free
-    buildCommand: npm install
+    name: urban-hairplaza-api
+    runtime: node
+    rootDir: urban_hairplaza
+    buildCommand: npm install --omit=dev
     startCommand: node backend/server.js
+    plan: free
+    region: singapore          # closest free-tier region to India
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false            # you'll enter this in Render dashboard
       - key: JWT_SECRET
-        generateValue: true
-      - key: DB_PATH
-        value: backend/db/urban_hairplaza.db
+        sync: false            # you'll enter this in Render dashboard
       - key: CORS_ORIGIN
-        value: https://urban-hairplaza.onrender.com
+        value: https://main.d3cr5x19t0a872.amplifyapp.com
