@@ -1,15 +1,6 @@
 'use strict';
 /**
  * Database module — Supabase PostgreSQL via node-postgres (pg).
- *
- * Connection is configured through the DATABASE_URL environment variable.
- * Supabase provides two connection strings per project:
- *   • Direct connection   : postgres://postgres:[pwd]@db.[ref].supabase.co:5432/postgres
- *   • Transaction pooler  : postgres://postgres.[ref]:[pwd]@aws-0-[region].pooler.supabase.com:6543/postgres
- *
- * For AWS Lambda (serverless) use the TRANSACTION POOLER URL and add
- * ?pgbouncer=true to the connection string.  For local development the
- * direct connection string works fine.
  */
 
 require('dotenv').config();
@@ -18,20 +9,27 @@ const { Pool } = require('pg');
 if (!process.env.DATABASE_URL && !process.env.PGHOST) {
   throw new Error(
     'No database configuration found.\n' +
-    'Set DATABASE_URL  OR  the PGHOST/PGPORT/PGDATABASE/PGUSER/PGPASSWORD env vars.\n' +
-    'Copy .env.example to .env and fill in your Supabase credentials.'
+    'Set DATABASE_URL  OR  the PGHOST/PGPORT/PGDATABASE/PGUSER/PGPASSWORD env vars.'
   );
 }
 
 const IS_LAMBDA = !!process.env.LAMBDA_TASK_ROOT;
 
+// Build connection config
+let connectionString = process.env.DATABASE_URL;
+
+// Supabase requires SSL — ensure sslmode is in the URL
+if (connectionString && !connectionString.includes('sslmode=')) {
+  const sep = connectionString.includes('?') ? '&' : '?';
+  connectionString = `${connectionString}${sep}sslmode=require`;
+}
+
 const poolConfig = {
-  // If DATABASE_URL is set use it; otherwise pg reads PGHOST/PGPORT/etc. automatically
-  ...(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : {}),
+  ...(connectionString ? { connectionString } : {}),
   ssl: { rejectUnauthorized: false },
   max: IS_LAMBDA ? 1 : 10,
   idleTimeoutMillis: IS_LAMBDA ? 0 : 30_000,
-  connectionTimeoutMillis: 10_000,
+  connectionTimeoutMillis: 15_000,
 };
 
 const pool = new Pool(poolConfig);
@@ -40,11 +38,12 @@ pool.on('error', (err) => {
   console.error('[DB] Unexpected pool error:', err.message);
 });
 
-// ── Convenience query helper ───────────────────────────────────────────────
-/**
- * Execute a SQL query and return the full pg Result object.
- * Usage:  const { rows } = await db.query('SELECT ...', [params]);
- */
+// Test connection on startup
+pool.query('SELECT 1')
+  .then(() => console.log('[DB] ✅ Connected to Supabase PostgreSQL'))
+  .catch(err => console.error('[DB] ❌ Connection failed:', err.message));
+
+// Convenience query helper
 pool.db = (text, params) => pool.query(text, params);
 
 module.exports = pool;
