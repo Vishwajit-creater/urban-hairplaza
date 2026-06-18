@@ -1,60 +1,69 @@
 version: 1
 
 # ─────────────────────────────────────────────────────────────────────────────
-# AWS Amplify Hosting build specification for Urban HairPlaza
-#
-# This file controls the CI/CD pipeline that Amplify runs every time you
-# push to your connected GitHub branch.
+# AWS Amplify Hosting build specification — Urban HairPlaza
 #
 # Architecture:
-#   ┌──────────────────────────────────────────────────────────────┐
-#   │  GitHub repo  →  Amplify CI/CD  →  CloudFront CDN + S3      │
-#   │  (this file)                        (frontend static files)  │
-#   │                                                               │
-#   │  Custom rewrite: /api/*  →  API Gateway  →  Lambda           │
-#   │                               (backend Express app)          │
-#   └──────────────────────────────────────────────────────────────┘
+#   GitHub push → Amplify CI/CD → CloudFront CDN + S3 (static frontend)
+#                                  ↑
+#   Rewrites: /api/* → API Gateway → Lambda (Express backend)
+#
+# IMPORTANT: This file lives in urban_hairplaza/amplify.yml
+# Set "App root" to "urban_hairplaza" in Amplify Console → App settings → Build settings
 # ─────────────────────────────────────────────────────────────────────────────
 
 frontend:
   phases:
-    # Install only production dependencies (backend not needed for static build)
     preBuild:
       commands:
-        - echo "Node.js version:$(node -v)"
-        - echo "npm version:$(npm -v)"
-        - npm ci --omit=dev
+        - echo "=== Urban HairPlaza — Amplify Frontend Build ==="
+        - echo "Node $(node -v) | npm $(npm -v)"
+        # Only install prod deps (no need for express/pg in a static build)
+        - npm ci --cache .npm --prefer-offline --omit=dev
 
     build:
       commands:
-        # Inject the runtime API URL as a JS config file read by the browser.
-        # API_GATEWAY_URL is set in the Amplify Console → Environment Variables.
-        # It must be the full API Gateway base URL including stage, e.g.:
-        #   https://abc123.execute-api.ap-south-1.amazonaws.com/prod
-        #
-        # All frontend HTML files use const API = '/api' (relative path).
-        # Amplify rewrites /api/* to API_GATEWAY_URL/api/* transparently,
-        # so NO change is needed in the HTML files — just set the rewrite below.
-        - echo "Building Urban HairPlaza frontend..."
-        - echo "API Gateway target → ${API_GATEWAY_URL:-NOT_SET}"
-        - echo "Build complete."
+        - echo "=== Copying portal files to dist/ ==="
+        # Create combined output: /customer, /owner, /admin, plus root index
+        - mkdir -p dist
+        - cp -r frontend/customer dist/customer
+        - cp -r frontend/owner    dist/owner
+        - cp -r frontend/admin    dist/admin
+        # Root redirect → customer portal
+        - |
+          cat > dist/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html><head>
+          <meta charset="UTF-8">
+          <meta http-equiv="refresh" content="0; url=/customer/">
+          <title>Urban HairPlaza</title>
+          </head><body>
+          <p>Redirecting to <a href="/customer/">Customer Portal</a>...</p>
+          </body></html>
+          EOF
+        - echo "=== Build complete ==="
+        - ls -la dist/
 
-  # The build artifact directory: Amplify publishes everything inside it.
+    postBuild:
+      commands:
+        - echo "Deployed portals:"
+        - echo "  Customer → /customer/"
+        - echo "  Owner    → /owner/"
+        - echo "  Admin    → /admin/"
+
+  # Amplify publishes everything inside dist/
   artifacts:
-    baseDirectory: frontend
+    baseDirectory: dist
     files:
       - '**/*'
 
-  # Cache node_modules between builds to speed up the CI pipeline.
+  # Cache node_modules between builds
   cache:
     paths:
-      - node_modules/**/*
+      - .npm/**/*
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Custom HTTP response headers applied by CloudFront to every response.
-# ─────────────────────────────────────────────────────────────────────────────
   customHeaders:
-    # Security headers for all files
+    # Security headers
     - pattern: '**/*'
       headers:
         - key: Strict-Transport-Security
@@ -65,8 +74,6 @@ frontend:
           value: SAMEORIGIN
         - key: Referrer-Policy
           value: strict-origin-when-cross-origin
-        - key: Permissions-Policy
-          value: camera=(), microphone=(), geolocation=()
 
     # Long-lived cache for static assets
     - pattern: '**/*.css'
@@ -82,7 +89,7 @@ frontend:
         - key: Cache-Control
           value: public, max-age=31536000, immutable
 
-    # No cache for HTML pages (always fresh)
+    # Always fresh HTML
     - pattern: '**/*.html'
       headers:
         - key: Cache-Control
