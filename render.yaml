@@ -2,7 +2,6 @@ services:
   - type: web
     name: urban-hairplaza-api
     runtime: node
-    rootDir: urban_hairplaza
     buildCommand: npm install --omit=dev
     startCommand: node backend/server.js
     plan: free
