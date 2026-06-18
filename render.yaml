@@ -18,3 +18,4 @@ services:
         sync: false            # you'll enter this in Render dashboard
       - key: CORS_ORIGIN
         value: https://main.d3cr5x19t0a872.amplifyapp.com
+      # Render URL: https://urban-hairplaza.onrender.com
