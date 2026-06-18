@@ -14,8 +14,9 @@ const { Pool } = require('pg');
 const bcrypt   = require('bcryptjs');
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  ...(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : {}),
   ssl: { rejectUnauthorized: false },
+  connectionTimeoutMillis: 15_000,
 });
 
 const HASH = (pw) => bcrypt.hashSync(pw, 10);

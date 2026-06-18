@@ -15,25 +15,26 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 
-if (!process.env.DATABASE_URL) {
+if (!process.env.DATABASE_URL && !process.env.PGHOST) {
   throw new Error(
-    'DATABASE_URL environment variable is not set.\n' +
-    'Copy .env.example to .env and add your Supabase connection string.'
+    'No database configuration found.\n' +
+    'Set DATABASE_URL  OR  the PGHOST/PGPORT/PGDATABASE/PGUSER/PGPASSWORD env vars.\n' +
+    'Copy .env.example to .env and fill in your Supabase credentials.'
   );
 }
 
 const IS_LAMBDA = !!process.env.LAMBDA_TASK_ROOT;
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  // Supabase requires SSL; rejectUnauthorized=false accepts self-signed certs
+const poolConfig = {
+  // If DATABASE_URL is set use it; otherwise pg reads PGHOST/PGPORT/etc. automatically
+  ...(process.env.DATABASE_URL ? { connectionString: process.env.DATABASE_URL } : {}),
   ssl: { rejectUnauthorized: false },
-  // In Lambda each container handles one request at a time —
-  // a pool of 1 avoids "too many connections" across concurrent invocations.
   max: IS_LAMBDA ? 1 : 10,
   idleTimeoutMillis: IS_LAMBDA ? 0 : 30_000,
-  connectionTimeoutMillis: 5_000,
-});
+  connectionTimeoutMillis: 10_000,
+};
+
+const pool = new Pool(poolConfig);
 
 pool.on('error', (err) => {
   console.error('[DB] Unexpected pool error:', err.message);
