@@ -20,7 +20,25 @@ const IS_LAMBDA = !!process.env.LAMBDA_TASK_ROOT;
 let connectionString = process.env.DATABASE_URL;
 
 if (connectionString) {
-  // Remove sslmode from URL — we set ssl via pool config below
+  // ── Auto-convert direct Supabase URL → pooler URL ──────────────────────
+  // Direct:  postgresql://postgres:PWD@db.REF.supabase.co:5432/postgres
+  // Pooler:  postgresql://postgres.REF:PWD@aws-0-ap-south-1.pooler.supabase.com:6543/postgres
+  //
+  // Render free tier is IPv4-only; direct host resolves to IPv6 → fails.
+  // Pooler host is IPv4. We auto-convert if we detect the direct host.
+  const directMatch = connectionString.match(
+    /^(postgresql|postgres):\/\/([^:]+):([^@]+)@db\.([^.]+)\.supabase\.co:5432\/(.+)$/
+  );
+  if (directMatch) {
+    const [, scheme, user, pass, ref, db] = directMatch;
+    // Use project ref in username only if not already there
+    const poolUser = user.includes('.') ? user : `${user}.${ref}`;
+    connectionString =
+      `${scheme}://${poolUser}:${pass}@aws-0-ap-south-1.pooler.supabase.com:6543/${db}`;
+    console.log('[DB] Auto-converted to Supabase pooler URL (IPv4)');
+  }
+
+  // Remove sslmode from URL — handled by pool ssl config below
   connectionString = connectionString
     .replace(/[?&]sslmode=[^&]*/g, '')
     .replace(/\?&/, '?')
