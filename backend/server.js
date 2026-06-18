@@ -104,18 +104,21 @@ app.get('/admin/*',    (_req, res) =>
 // ── Global Error Handler ───────────────────────────────────────────────────
 app.use(require('./middleware/errorHandler'));
 
-// ── Graceful Shutdown ──────────────────────────────────────────────────────
+// ── Graceful Shutdown (only relevant for persistent server) ───────────────
 process.on('SIGTERM', () => {
   console.log('SIGTERM received — closing server gracefully...');
-  server.close(() => process.exit(0));
+  if (global._uhpServer) global._uhpServer.close(() => process.exit(0));
+  else process.exit(0);
 });
 process.on('uncaughtException',  err => { console.error('Uncaught:', err);  process.exit(1); });
 process.on('unhandledRejection', err => { console.error('Unhandled:', err); process.exit(1); });
 
-// ── Start ──────────────────────────────────────────────────────────────────
-const server = app.listen(PORT, () => {
-  const env = process.env.NODE_ENV || 'development';
-  console.log(`
+// ── Start (skipped when running inside AWS Lambda) ─────────────────────────
+const IS_LAMBDA = !!process.env.LAMBDA_TASK_ROOT;
+if (!IS_LAMBDA) {
+  const serverInstance = app.listen(PORT, () => {
+    const env = process.env.NODE_ENV || 'development';
+    console.log(`
 \x1b[33m
  ██╗   ██╗██╗  ██╗██████╗ 
  ██║   ██║██║  ██║██╔══██╗
@@ -133,6 +136,9 @@ const server = app.listen(PORT, () => {
   API:       \x1b[36mhttp://localhost:${PORT}/api\x1b[0m
 ─────────────────────────────────────────────
 `);
-});
+  });
+  global._uhpServer = serverInstance;
+}
 
 module.exports = app;
+

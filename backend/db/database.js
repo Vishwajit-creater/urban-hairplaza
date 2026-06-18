@@ -1,41 +1,49 @@
 'use strict';
+/**
+ * Database module — Supabase PostgreSQL via node-postgres (pg).
+ *
+ * Connection is configured through the DATABASE_URL environment variable.
+ * Supabase provides two connection strings per project:
+ *   • Direct connection   : postgres://postgres:[pwd]@db.[ref].supabase.co:5432/postgres
+ *   • Transaction pooler  : postgres://postgres.[ref]:[pwd]@aws-0-[region].pooler.supabase.com:6543/postgres
+ *
+ * For AWS Lambda (serverless) use the TRANSACTION POOLER URL and add
+ * ?pgbouncer=true to the connection string.  For local development the
+ * direct connection string works fine.
+ */
 
-// Suppress Node.js experimental SQLite warning in production
-if (process.env.NODE_ENV === 'production') {
-  const originalEmit = process.emit.bind(process);
-  process.emit = function (event, warning, ...args) {
-    if (event === 'warning' && warning?.name === 'ExperimentalWarning'
-        && warning?.message?.includes('SQLite')) return false;
-    return originalEmit(event, warning, ...args);
-  };
+require('dotenv').config();
+const { Pool } = require('pg');
+
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    'DATABASE_URL environment variable is not set.\n' +
+    'Copy .env.example to .env and add your Supabase connection string.'
+  );
 }
 
-// Uses Node.js built-in 'node:sqlite' (available since Node.js v22.5.0)
-// No native build tools required — works on all platforms out of the box.
-const { DatabaseSync } = require('node:sqlite');
-const path = require('path');
-const fs   = require('fs');
+const IS_LAMBDA = !!process.env.LAMBDA_TASK_ROOT;
 
-const DB_PATH     = process.env.DB_PATH
-  ? path.resolve(process.cwd(), process.env.DB_PATH)
-  : path.join(__dirname, 'urban_hairplaza.db');
-const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  // Supabase requires SSL; rejectUnauthorized=false accepts self-signed certs
+  ssl: { rejectUnauthorized: false },
+  // In Lambda each container handles one request at a time —
+  // a pool of 1 avoids "too many connections" across concurrent invocations.
+  max: IS_LAMBDA ? 1 : 10,
+  idleTimeoutMillis: IS_LAMBDA ? 0 : 30_000,
+  connectionTimeoutMillis: 5_000,
+});
 
-// Ensure DB directory exists
-fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+pool.on('error', (err) => {
+  console.error('[DB] Unexpected pool error:', err.message);
+});
 
-const db = new DatabaseSync(DB_PATH);
+// ── Convenience query helper ───────────────────────────────────────────────
+/**
+ * Execute a SQL query and return the full pg Result object.
+ * Usage:  const { rows } = await db.query('SELECT ...', [params]);
+ */
+pool.db = (text, params) => pool.query(text, params);
 
-// Performance + safety pragmas
-db.exec('PRAGMA journal_mode = WAL;');
-db.exec('PRAGMA foreign_keys = ON;');
-db.exec('PRAGMA busy_timeout = 5000;');
-db.exec('PRAGMA synchronous = NORMAL;');
-db.exec('PRAGMA cache_size = -20000;'); // 20MB page cache
-db.exec('PRAGMA temp_store = MEMORY;');
-
-// Initialize schema (IF NOT EXISTS guards make this idempotent)
-const schema = fs.readFileSync(SCHEMA_PATH, 'utf8');
-db.exec(schema);
-
-module.exports = db;
+module.exports = pool;

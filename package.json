@@ -4,15 +4,26 @@
   "description": "Urban HairPlaza — Multi-vendor salon booking platform with customer, owner, and admin portals.",
   "main": "backend/server.js",
   "engines": {
-    "node": ">=22.5.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
     "seed": "node backend/db/seed.js",
-    "lint": "eslint backend/**/*.js"
+    "sam:build": "sam build",
+    "sam:deploy": "sam deploy --guided",
+    "sam:deploy:ci": "sam deploy --no-confirm-changeset --no-fail-on-empty-changeset"
   },
-  "keywords": ["salon", "booking", "multi-vendor", "express", "sqlite"],
+  "keywords": [
+    "salon",
+    "booking",
+    "multi-vendor",
+    "express",
+    "supabase",
+    "postgresql",
+    "serverless",
+    "aws-lambda"
+  ],
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -23,7 +34,9 @@
     "express-rate-limit": "^7.3.1",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "pg": "^8.12.0",
+    "serverless-http": "^3.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.3"

@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Urban HairPlaza — Multi-vendor salon booking platform.
+  Backend: Express.js wrapped with serverless-http, running on AWS Lambda.
+  Frontend: Served separately via AWS Amplify Hosting.
+
+# ── Global defaults applied to all Lambda functions ───────────────────────
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 29           # API GW max is 29 s (HTTP API)
+    MemorySize: 512
+    Architectures:
+      - arm64             # Graviton2 — faster cold starts, ~20% cheaper
+    Environment:
+      Variables:
+        NODE_ENV:     production
+        JWT_SECRET:   !Ref JwtSecret
+        DATABASE_URL: !Ref DatabaseUrl
+
+# ── Parameters ────────────────────────────────────────────────────────────
+Parameters:
+  JwtSecret:
+    Type:        String
+    NoEcho:      true
+    Description: JWT signing secret (min 32 chars).
+    MinLength:   32
+
+  DatabaseUrl:
+    Type:        String
+    NoEcho:      true
+    Description: >
+      Supabase PostgreSQL connection string.
+      Use the Transaction Pooler URL for Lambda:
+      postgresql://postgres.[ref]:[pwd]@aws-0-[region].pooler.supabase.com:6543/postgres
+
+  CorsOrigin:
+    Type:        String
+    Description: Allowed CORS origin (your Amplify app URL)
+    Default:     "*"
+
+# ── Resources ─────────────────────────────────────────────────────────────
+Resources:
+
+  # ── Lambda function ─────────────────────────────────────────────────────
+  UrbanHairPlazaAPI:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:  urban-hairplaza-api
+      Description:   Urban HairPlaza Express API (serverless-http)
+      Handler:       lambda.handler
+      CodeUri:       ./
+      Environment:
+        Variables:
+          CORS_ORIGIN: !Ref CorsOrigin
+      Events:
+        # Catch-all route: ANY /api and ANY /api/{proxy+}
+        ApiRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref UrbanHairPlazaHttpApi
+            Path:  /api
+            Method: ANY
+        ApiProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref UrbanHairPlazaHttpApi
+            Path:  /api/{proxy+}
+            Method: ANY
+      Tags:
+        Project: urban-hairplaza
+        Environment: production
+
+  # ── HTTP API (API Gateway v2) ────────────────────────────────────────────
+  UrbanHairPlazaHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+      Description: Urban HairPlaza API Gateway
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref CorsOrigin
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+          - OPTIONS
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+          - X-Amz-Date
+          - X-Api-Key
+        MaxAge: 86400
+      Tags:
+        Project: urban-hairplaza
+
+  # ── IAM permission: API GW → Lambda ────────────────────────────────────
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt UrbanHairPlazaAPI.Arn
+      Action:       lambda:InvokeFunction
+      Principal:    apigateway.amazonaws.com
+      SourceArn:    !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${UrbanHairPlazaHttpApi}/*
+
+# ── Outputs ───────────────────────────────────────────────────────────────
+Outputs:
+
+  ApiUrl:
+    Description: >
+      API Gateway endpoint URL.
+      Use this as the rewrite target in Amplify Hosting:
+        Source  /api/<*>
+        Target  https://<this-url>/prod/api/<*>
+        Type    200 (Proxy)
+    Value: !Sub https://${UrbanHairPlazaHttpApi}.execute-api.${AWS::Region}.amazonaws.com/prod
+    Export:
+      Name: UrbanHairPlazaApiUrl
+
+  LambdaArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt UrbanHairPlazaAPI.Arn
+    Export:
+      Name: UrbanHairPlazaLambdaArn

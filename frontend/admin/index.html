@@ -117,7 +117,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'http://localhost:3000/api';
+const API = '/api';
 const getToken = () => localStorage.getItem('uhp_token');
 const getUser = () => { try { return JSON.parse(localStorage.getItem('uhp_user')); } catch { return null; } };
 const user = getUser();

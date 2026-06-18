@@ -123,7 +123,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.9);backdrop-fil
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'http://localhost:3000/api';
+const API = '/api';
 const getToken = () => localStorage.getItem('uhp_token');
 const getUser = () => { try { return JSON.parse(localStorage.getItem('uhp_user')); } catch { return null; } };
 

@@ -1,0 +1,89 @@
+version: 1
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AWS Amplify Hosting build specification for Urban HairPlaza
+#
+# This file controls the CI/CD pipeline that Amplify runs every time you
+# push to your connected GitHub branch.
+#
+# Architecture:
+#   ┌──────────────────────────────────────────────────────────────┐
+#   │  GitHub repo  →  Amplify CI/CD  →  CloudFront CDN + S3      │
+#   │  (this file)                        (frontend static files)  │
+#   │                                                               │
+#   │  Custom rewrite: /api/*  →  API Gateway  →  Lambda           │
+#   │                               (backend Express app)          │
+#   └──────────────────────────────────────────────────────────────┘
+# ─────────────────────────────────────────────────────────────────────────────
+
+frontend:
+  phases:
+    # Install only production dependencies (backend not needed for static build)
+    preBuild:
+      commands:
+        - echo "Node.js version:$(node -v)"
+        - echo "npm version:$(npm -v)"
+        - npm ci --omit=dev
+
+    build:
+      commands:
+        # Inject the runtime API URL as a JS config file read by the browser.
+        # API_GATEWAY_URL is set in the Amplify Console → Environment Variables.
+        # It must be the full API Gateway base URL including stage, e.g.:
+        #   https://abc123.execute-api.ap-south-1.amazonaws.com/prod
+        #
+        # All frontend HTML files use const API = '/api' (relative path).
+        # Amplify rewrites /api/* to API_GATEWAY_URL/api/* transparently,
+        # so NO change is needed in the HTML files — just set the rewrite below.
+        - echo "Building Urban HairPlaza frontend..."
+        - echo "API Gateway target → ${API_GATEWAY_URL:-NOT_SET}"
+        - echo "Build complete."
+
+  # The build artifact directory: Amplify publishes everything inside it.
+  artifacts:
+    baseDirectory: frontend
+    files:
+      - '**/*'
+
+  # Cache node_modules between builds to speed up the CI pipeline.
+  cache:
+    paths:
+      - node_modules/**/*
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Custom HTTP response headers applied by CloudFront to every response.
+# ─────────────────────────────────────────────────────────────────────────────
+  customHeaders:
+    # Security headers for all files
+    - pattern: '**/*'
+      headers:
+        - key: Strict-Transport-Security
+          value: max-age=31536000; includeSubDomains
+        - key: X-Content-Type-Options
+          value: nosniff
+        - key: X-Frame-Options
+          value: SAMEORIGIN
+        - key: Referrer-Policy
+          value: strict-origin-when-cross-origin
+        - key: Permissions-Policy
+          value: camera=(), microphone=(), geolocation=()
+
+    # Long-lived cache for static assets
+    - pattern: '**/*.css'
+      headers:
+        - key: Cache-Control
+          value: public, max-age=31536000, immutable
+    - pattern: '**/*.js'
+      headers:
+        - key: Cache-Control
+          value: public, max-age=31536000, immutable
+    - pattern: '**/*.{png,jpg,jpeg,gif,webp,svg,ico,woff,woff2}'
+      headers:
+        - key: Cache-Control
+          value: public, max-age=31536000, immutable
+
+    # No cache for HTML pages (always fresh)
+    - pattern: '**/*.html'
+      headers:
+        - key: Cache-Control
+          value: no-cache, no-store, must-revalidate

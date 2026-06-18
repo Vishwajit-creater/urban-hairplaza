@@ -1,0 +1,48 @@
+# SAM build ignores — keeps the Lambda deployment package lean
+# (SAM copies the project directory; exclude development-only files)
+
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+
+# Dev tools
+nodemon.json
+.eslintrc*
+.prettierrc*
+*.test.js
+tests/
+__tests__/
+coverage/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Database files (Lambda uses /tmp, so the DB file must not be packaged)
+backend/db/*.db
+backend/db/*.db-shm
+backend/db/*.db-wal
+
+# Documentation (not needed in Lambda)
+README.md
+DEPLOY_AWS.md
+docs/
+
+# Deployment artifacts that shouldn't be in Lambda
+Procfile
+render.yaml
+amplify.yml
+template.yaml
+samconfig.toml

@@ -236,7 +236,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.9);backdrop-fil
 </div>
 
 <script>
-const API = 'http://localhost:3000/api';
+const API = '/api';
 const params = new URLSearchParams(location.search);
 const salonId = params.get('salon_id');
 const getToken = () => localStorage.getItem('uhp_token');
