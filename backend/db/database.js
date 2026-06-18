@@ -15,26 +15,29 @@ if (!process.env.DATABASE_URL && !process.env.PGHOST) {
 
 const IS_LAMBDA = !!process.env.LAMBDA_TASK_ROOT;
 
-// Build connection config
+// Build connection config — strip conflicting SSL params from URL
+// then let the pool's ssl:{rejectUnauthorized:false} handle it.
 let connectionString = process.env.DATABASE_URL;
 
-// Supabase pooler (port 6543) requires pgbouncer=true
-// Supabase direct (port 5432) requires sslmode=require
 if (connectionString) {
-  if (!connectionString.includes('sslmode=')) {
-    const sep = connectionString.includes('?') ? '&' : '?';
-    connectionString += `${sep}sslmode=require`;
-  }
-  // Add pgbouncer flag for transaction pooler (port 6543)
+  // Remove sslmode from URL — we set ssl via pool config below
+  connectionString = connectionString
+    .replace(/[?&]sslmode=[^&]*/g, '')
+    .replace(/\?&/, '?')
+    .replace(/&&/g, '&')
+    .replace(/[?&]$/, '');
+
+  // Add pgbouncer=true for transaction pooler (port 6543)
   if (connectionString.includes(':6543') && !connectionString.includes('pgbouncer=')) {
-    connectionString += '&pgbouncer=true';
+    const sep = connectionString.includes('?') ? '&' : '?';
+    connectionString += `${sep}pgbouncer=true`;
   }
 }
 
 const poolConfig = {
   ...(connectionString ? { connectionString } : {}),
-  ssl: { rejectUnauthorized: false },
-  max: IS_LAMBDA ? 1 : 10,
+  ssl: { rejectUnauthorized: false },   // trust Supabase self-signed cert
+  max: IS_LAMBDA ? 1 : 5,
   idleTimeoutMillis: IS_LAMBDA ? 0 : 30_000,
   connectionTimeoutMillis: 15_000,
 };
