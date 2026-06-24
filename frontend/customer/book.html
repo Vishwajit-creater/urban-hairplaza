@@ -236,7 +236,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.9);backdrop-fil
 </div>
 
 <script>
-const API = '/api';
+const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? '/api' : 'https://urban-hairplaza.onrender.com/api';
 const params = new URLSearchParams(location.search);
 const salonId = params.get('salon_id');
 const getToken = () => localStorage.getItem('uhp_token');

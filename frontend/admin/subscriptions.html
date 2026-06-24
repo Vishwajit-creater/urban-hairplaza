@@ -98,7 +98,7 @@ input:focus{border-color:var(--gold)}
 <div class="toast" id="toast"></div>
 
 <script>
-const API = '/api';
+const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? '/api' : 'https://urban-hairplaza.onrender.com/api';
 const getToken = () => localStorage.getItem('uhp_token');
 const getUser = () => { try { return JSON.parse(localStorage.getItem('uhp_user')); } catch { return null; } };
 const user = getUser();

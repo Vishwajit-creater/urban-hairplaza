@@ -258,7 +258,7 @@ footer{border-top:1px solid var(--border);padding:3rem 5%;margin-top:4rem;displa
 <div class="toast" id="toast"></div>
 
 <script>
-const API = '/api';
+const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? '/api' : 'https://urban-hairplaza.onrender.com/api';
 let allSalons = [];
 let userLocation = null;
 let searchTimer = null;
